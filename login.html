@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>チャットログイン</title>
+  <link rel="stylesheet" href="styles.css"/>
+</head>
+<body>
+  <h2>ログイン</h2>
+  <form id="login-form">
+    <input type="email" id="email" placeholder="メールアドレス" required />
+    <input type="password" id="password" placeholder="パスワード" required />
+    <button type="submit">ログイン</button>
+  </form>
+  <p>
+    アカウントがない方は
+    <a href="signup.html">こちらから作成</a>
+  </p>
+
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-auth-compat.js"></script>
+
+  <script>
+    console.log("🔑 login.js: start");
+
+    const firebaseConfig = {
+      apiKey:            "AIzaSyAC_A8dMvfzc2I8SaKTSfklFDWHgqFZThQ",
+      authDomain:        "company-chat-app.firebaseapp.com",
+      projectId:         "company-chat-app",
+      storageBucket:     "company-chat-app.firebasestorage.app",
+      messagingSenderId: "409983657200",
+      appId:             "1:409983657200:web:bf2f037efb6a292799ce35",
+      measurementId:     "G-KDL141H28M"
+    };
+
+    /* Firebaseを初期化 */
+    const app = firebase.apps.length
+      ? firebase.app()
+      : firebase.initializeApp(firebaseConfig);
+
+    const auth = firebase.auth(app);
+
+   
+
+    /* 永続化 LOCAL */
+    auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL)
+        .then(() => console.log("🔑 persistence = LOCAL"))
+        .catch(err => console.error("🔑 setPersistence failed", err));
+
+    /* 既にログイン済みなら即遷移 */
+    auth.onAuthStateChanged(user => {
+      if (user) {
+        console.log("🔑 already signed-in:", user.email);
+        location.href = "index.html";
+      }
+    });
+
+    /* フォーム送信でログイン */
+    document.getElementById("login-form").addEventListener("submit", async e => {
+      e.preventDefault();
+      const email = document.getElementById("email").value.trim();
+      const pass  = document.getElementById("password").value;
+
+      console.log("🔑 signIn attempt", { email, passLength: pass.length });
+
+      try {
+        const { user } = await auth.signInWithEmailAndPassword(email, pass);
+        console.log("🔑 signIn success", user.uid);
+        location.href = "index.html";
+      } catch (err) {
+        console.error("🔑 signIn error", err.code, err.message);
+        alert("ログイン失敗: " + err.message);
+      }
+    });
+  </script>
+</body>
+</html>

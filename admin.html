@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>管理者パネル</title>
+  <link rel="stylesheet" href="styles.css"/>
+</head>
+<body>
+  <div class="settings-header">
+    <button class="back-btn" onclick="history.back()">← 戻る</button>
+    <div class="settings-title">管理者パネル</div>
+  </div>
+
+  <!-- 追加：LINEライクなナビゲーション -->
+  <nav class="settings-nav">
+    <button data-section="users">ユーザー管理</button>
+    <button data-section="rooms">ルーム管理</button>
+    <button data-section="messages">メッセージ管理</button>
+  </nav>
+
+  <main class="settings-main">
+    <!-- ユーザー管理 -->
+    <section id="section-users" class="settings-section hidden">
+      <div class="section-title">ユーザー管理</div>
+      <div id="users-table"></div>
+    </section>
+
+    <!-- ルーム管理 -->
+    <section id="section-rooms" class="settings-section hidden">
+      <div class="section-title">ルーム管理</div>
+      <div id="rooms-table"></div>
+      <button id="create-room-btn" class="btn-save">ルーム作成</button>
+    </section>
+
+    <!-- メッセージ管理 -->
+    <section id="section-messages" class="settings-section hidden">
+      <div class="section-title">メッセージ管理</div>
+      <input type="text" id="message-search-input" placeholder="キーワード検索..." />
+    
+      <!-- 追加：読み込み中スピナー -->
+      <div id="message-loading" class="hidden">
+        読み込み中…
+      </div>
+    
+      <div id="messages-list"></div>
+    </section>    
+  </main>
+
+  <!-- 追加：トースト用コンテナ -->
+<div id="toast-container" aria-live="polite" aria-atomic="true"></div>
+
+  <!-- Firebase Compat SDK 版を読み込み -->
+  <script src="https://www.gstatic.com/firebasejs/10.14.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.14.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.14.0/firebase-firestore-compat.js"></script>
+  <script src="admin.js"></script>
+</body>
+</html>

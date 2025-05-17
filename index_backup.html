@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>社内チャット</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <!-- ルーム選択 -->
+  <div style="padding:8px; background:#f7f7f7; text-align:center;">
+    <label for="room-select">ルーム：</label>
+    <select id="room-select">
+      <option value="general">General</option>
+      <option value="sales">Sales</option>
+      <option value="tech">Tech</option>
+    </select>
+  </div>
+
+  <!-- ログアウト -->
+  <button id="logout" style="position:absolute; top:10px; right:10px;">
+    ログアウト
+  </button>
+
+  <!-- チャットコンテナ -->
+  <div id="chat-container">
+    <div id="messages"></div>
+    <form id="message-form">
+      <input
+        type="text"
+        id="message-input"
+        placeholder="メッセージを入力..."
+        autocomplete="off"
+      />
+      <button type="submit">送信</button>
+    </form>
+  </div>
+
+  <!-- カスタムコンテキストメニュー -->
+  <div id="context-menu"
+       style="position:absolute; display:none; z-index:1000;
+              background:#fff; border:1px solid #ccc;
+              border-radius:4px; box-shadow:0 2px 6px rgba(0,0,0,0.2);">
+    <button id="ctx-copy">コピー</button>
+    <button id="ctx-retract">送信取消</button>
+    <button id="ctx-edit">編集</button>
+  </div>
+
+  <!-- Firebase Compat SDK -->
+  <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-auth-compat.js"></script>
+
+  <!-- Firebase 初期化 -->
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyAC_A8dMvfzc2I8SaKTSfklFDWHgqFZThQ",
+      authDomain: "company-chat-app.firebaseapp.com",
+      projectId: "company-chat-app",
+      storageBucket: "company-chat-app.firebasestorage.app",
+      messagingSenderId: "409983657200",
+      appId: "1:409983657200:web:bf2f037efb6a292799ce35",
+      measurementId: "G-KDL141H28M"
+    };
+    firebase.initializeApp(firebaseConfig);
+  </script>
+
+  <!-- メイン処理 -->
+  <script src="main.js"></script>
+</body>
+</html>

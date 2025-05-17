@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>チャットアカウント作成</title>
+  <link rel="stylesheet" href="styles.css"/>
+</head>
+<body>
+  <h2>アカウント作成</h2>
+  <form id="signup-form">
+    <input type="text" id="displayName" placeholder="表示名" required/>
+    <input type="email" id="signup-email" placeholder="メールアドレス" required/>
+    <input type="password" id="signup-password" placeholder="パスワード（6文字以上）" required/>
+    <button type="submit">アカウント作成</button>
+  </form>
+  <p>
+    すでにアカウントをお持ちですか？
+    <a href="login.html">ログインはこちら</a>
+  </p>
+
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-auth-compat.js"></script>
+  <script>
+    // 1) Firebase 初期化
+    const firebaseConfig = {
+      apiKey: "AIzaSyAC_A8dMvfzc2I8SaKTSfklFDWHgqFZThQ",
+      authDomain: "company-chat-app.firebaseapp.com",
+      projectId: "company-chat-app",
+      storageBucket: "company-chat-app.firebasestorage.app",
+      messagingSenderId: "409983657200",
+      appId: "1:409983657200:web:bf2f037efb6a292799ce35",
+      measurementId: "G-KDL141H28M"
+    };
+    firebase.initializeApp(firebaseConfig);
+
+    const auth = firebase.auth();
+
+    document.getElementById("signup-form").addEventListener("submit", async e => {
+      e.preventDefault();
+      const displayName = document.getElementById("displayName").value.trim();
+      const email       = document.getElementById("signup-email").value.trim();
+      const pass        = document.getElementById("signup-password").value.trim();
+
+      try {
+        // 2) Firebase Auth でアカウント作成
+        const cred = await auth.createUserWithEmailAndPassword(email, pass);
+
+        // 3) プロフィールに表示名を設定
+        await cred.user.updateProfile({ displayName });
+
+        alert("アカウント作成に成功しました。ログイン画面へ移動します。");
+        location.href = "login.html";
+      } catch (err) {
+        alert("作成失敗: " + err.message);
+      }
+    });
+  </script>
+</body>
+</html>

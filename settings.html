@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="ja">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width,initial-scale=1.0" />
+        <title>アカウント設定 – 社内チャット</title>
+        <link rel="stylesheet" href="styles.css?v=10" />
+      
+        <!-- ── 追加：Firebase SDK ── -->
+        <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
+        <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-auth-compat.js"></script>
+        <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore-compat.js"></script>
+        <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-storage-compat.js"></script>
+        <script>
+          // Firebase の初期化（index.html と同じ設定をコピー）
+          firebase.initializeApp({
+            apiKey:            "AIzaSyAC_A8dMvfzc2I8SaKTSfklFDWHgqFZThQ",
+            authDomain:        "company-chat-app.firebaseapp.com",
+            projectId:         "company-chat-app",
+            storageBucket:     "company-chat-app.firebasestorage.app",
+            messagingSenderId: "409983657200",
+            appId:             "1:409983657200:web:bf2f037efb6a292799ce35"
+          });
+        </script>
+      </head>
+      
+<body>
+  <div class="app">
+    <!-- ヘッダー -->
+    <header class="settings-header">
+        <button id="back-btn" class="back-btn">←</button>
+        <h1 class="settings-title">アカウント設定</h1>
+      </header>
+      
+      <!-- 本体 -->
+      <main class="settings-main">
+        <!-- プロフィール編集セクション -->
+        <section class="settings-section">
+          <h2 class="section-title">プロフィール</h2>      
+        <div class="profile-edit">
+            <div class="avatar-edit">
+                <img src="default-avatar.png" alt="アバター" id="avatar-preview" class="avatar-large" />
+                <input type="file" id="avatar-input" accept="image/*" />
+              </div>              
+          <div class="field-group">
+            <label for="display-name">表示名</label>
+            <input type="text" id="display-name" placeholder="表示名を入力" />
+          </div>
+          <div class="field-group">
+            <label for="status-message">ステータスメッセージ</label>
+            <input type="text" id="status-message" placeholder="ステータスメッセージを入力" />
+          </div>
+        </div>
+      </section>
+
+      <!-- 操作ボタン -->
+      <div class="settings-actions">
+        <button id="save-btn" class="btn-save">保存</button>
+      </div>
+    </main>
+  </div>
+
+  <script>
+    // 戻るボタン
+    document.getElementById('back-btn').addEventListener('click', () => {
+      history.back();
+    });
+  
+    // 認証状態を監視し、準備ができてからフォーム初期化＆保存処理を登録
+    firebase.auth().onAuthStateChanged(async user => {
+      if (!user) {
+        location.href = 'login.html';
+        return;
+      }
+  
+      // フォームに既存のプロフィール情報をセット
+      document.getElementById('avatar-preview').src   = user.photoURL   || 'default-avatar.png';
+      document.getElementById('display-name').value   = user.displayName || '';
+      document.getElementById('status-message').value = ''; // Firestore等から取る場合はここで取得
+  
+      // 保存処理をここで登録（user は null ではない）
+      document.getElementById('save-btn').addEventListener('click', async () => {
+        const db      = firebase.firestore();
+        const storage = firebase.storage();
+        const newName   = document.getElementById('display-name').value.trim();
+        const newStatus = document.getElementById('status-message').value.trim();
+        const avatarFile = document.getElementById('avatar-input').files[0];
+  
+        const updates = {};
+        if (newName) updates.displayName = newName;
+  
+        // アバターアップロード（あれば）
+        if (avatarFile) {
+          const storageRef = storage.ref().child(`avatars/${user.uid}`);
+          const snap = await storageRef.put(avatarFile);
+          const avatarURL = await snap.ref.getDownloadURL();
+          updates.photoURL = avatarURL;
+        }
+  
+        // Firebase Auth プロフィール更新
+        await user.updateProfile(updates);
+  
+                // Firestore ユーザー情報更新
+                await db.collection('users').doc(user.uid).set({
+          displayName:   newName || user.displayName,
+          statusMessage: newStatus,
+          photoURL:      updates.photoURL || user.photoURL,
+          updatedAt:     firebase.firestore.FieldValue.serverTimestamp()
+        }, { merge: true });
+  
+        alert('プロフィールを保存しました');
+        // チャットページに確実に戻してリロード
+        window.location.href = 'index.html';
+
+      });
+    });
+  </script>  
+</body>
+</html>
