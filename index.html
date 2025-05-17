@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <title>社内チャット</title>
+  
+    <!-- CSS v10 -->
+    <link rel="stylesheet" href="styles.css?v=10" />
+
+  </head>  
+<body>
+  <div class="app">
+    <!-- ① ナビゲーション -->
+    <aside class="nav">
+      <!-- メインナビゲーション -->
+      <button class="nav-icon" aria-label="ホーム">🏠</button>
+      <button class="nav-icon" aria-label="友だち">👥</button>
+      <button class="nav-icon" aria-label="トーク">💬</button>
+      <button class="nav-icon" aria-label="タイムライン">⏰</button>
+      <button class="nav-icon" aria-label="Keep">🔖</button>
+      
+    
+      <!-- その他メニュー -->
+      <div class="nav-divider"></div>
+      <button class="nav-icon" aria-label="その他">⋯</button>
+    </aside>
+    
+
+    <!-- ② ルーム一覧 -->
+    <section class="conversations">
+      <div class="conversations-header">
+        <button id="add-room-btn" class="add-room">＋</button>
+        <input type="search" id="room-search"
+               placeholder="トークルームとメッセージ検索…" autocomplete="off" />
+      </div>
+      <ul id="conv-list"></ul>
+      <button id="logout" class="logout-btn">ログアウト</button>
+    </section>
+
+    <!-- ②⇔③ リサイズバー -->
+    <div id="conv-resizer" class="resizer"></div>
+
+        <!-- ③ チャットウインドウ -->
+        <main class="chat-window">
+          <div id="fixed-date-header" class="fixed-date-header"></div>
+        
+          <header class="room-bar">
+            <div class="room-title">
+              ルーム：<span id="room-name">general</span>
+              <button id="toggle-search-btn"
+                      aria-label="メッセージ検索切替">
+                🔍
+              </button>
+            </div>
+            <div class="profile-container">
+              <img src="path/to/avatar.jpg" alt="ユーザーアイコン" class="profile-avatar" />
+              <div class="profile-popover">
+                <div class="popover-header">
+                  <img src="path/to/avatar.jpg" alt="ユーザーアイコン" class="avatar-sm" />
+                  <div class="user-info">
+                    <div class="user-name" id="header-username">山田 太郎</div>
+                    <div class="user-email" id="header-email">taro@example.com</div>
+                  </div>
+                </div>
+                <ul class="popover-menu">
+                  <li><a href="settings.html" class="btn-profile-settings">アカウント設定</a></li>
+                  <li><button class="btn-logout">ログアウト</button></li>
+                </ul>                                  
+              </div>
+            </header>
+            
+        
+          <!-- メッセージ検索バー 追加 -->
+          <div class="message-search-bar">
+            <input type="search"
+                   id="message-search"
+                   placeholder="メッセージを検索…"
+                   autocomplete="off" />
+          </div>
+    
+          <!-- 返信プレビュー -->
+          <div class="reply-preview hidden">
+            <span class="original"></span>
+            <button class="cancel-btn" aria-label="キャンセル">×</button>
+          </div>
+        
+          <ul id="chat"></ul>
+
+<!-- 「さらに読み込む」ボタンを追加 -->
+<div id="load-more-container">
+  <button id="load-more-btn">さらに読み込む</button>
+</div>
+
+          <div id="input-bar">
+            <input type="text" id="message-input"
+                   placeholder="メッセージを入力…" autocomplete="off" />
+            <button id="send-btn">送信</button>
+          </div>
+        </main>    
+  </div>
+
+  <!-- 発送管理サイドドロワー -->
+  <aside id="shipping-panel">
+    <div class="panel">
+      <h2>発送管理</h2>
+
+      <!-- タブ切替 -->
+      <div class="shipping-tabs">
+        <button id="tab-active"    class="tab active">進行中</button>
+        <button id="tab-completed" class="tab">本日完了</button>
+      </div>
+
+      <!-- 進行中 / 本日完了 リスト -->
+      <div id="active-list"><!-- JS が here に挿入 --></div>
+      <div id="completed-list" class="hidden"><!-- JS が here に挿入 --></div>
+
+      <button id="close-shipping-btn" class="btn-close">閉じる</button>
+    </div>
+  </aside>
+
+  <!-- ルーム作成モーダル -->
+  <div id="room-modal" class="overlay hidden">
+    <div class="modal">
+      <h2>ルームを作成</h2>
+      <input type="text" id="new-room-input" placeholder="新しいルーム名" />
+      <div class="modal-buttons">
+        <button id="cancel-room-btn" class="btn-cancel">キャンセル</button>
+        <button id="create-room-btn" class="btn-create">作成</button>
+      </div>
+    </div>
+  </div>
+
+   <!-- Firebase SDK -->
+<script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore-compat.js"></script>
+
+<script>
+  const firebaseConfig = {
+    apiKey: "AIzaSyAC_A8dMvfzc2I8SaKTSfklFDWHgqFZThQ",
+    authDomain: "company-chat-app.firebaseapp.com",
+    projectId: "company-chat-app",
+    storageBucket: "company-chat-app.firebasestorage.app",
+    messagingSenderId: "409983657200",
+    appId: "1:409983657200:web:bf2f037efb6a292799ce35"
+  };
+
+  firebase.initializeApp(firebaseConfig);
+
+  document.addEventListener('DOMContentLoaded', () => {
+    firebase.auth().onAuthStateChanged(user => {
+      if (user) {
+        document.getElementById('header-username').textContent = user.displayName || user.email;
+        document.getElementById('header-email').textContent = user.email;
+      } else {
+        document.getElementById('header-username').textContent = "未ログイン";
+        document.getElementById('header-email').textContent = "メール未登録";
+      }
+    });
+  });
+</script>
+
+
+
+<!-- 編集／削除履歴モーダル -->
+<div id="history-modal" class="overlay hidden">
+  <div class="modal">
+    <h2>編集／削除履歴</h2>
+    <ul id="history-list"></ul>
+    <button id="close-history-btn">閉じる</button>
+  </div>
+</div>
+
+<!-- main.js v17 修正版（PC・スマホ版両方対応） -->
+<script src="main.js?v=17" defer></script>
+
+
+<!-- ▼▼▼ ここに追加します ▼▼▼ -->
+<div class="bottom-nav">
+  <button id="nav-chats" class="active">
+    <span class="icon">💬</span>
+    <span>トーク</span>
+  </button>
+  <button id="nav-rooms">
+    <span class="icon">📃</span>
+    <span>ルーム一覧</span>
+  </button>
+  <button id="nav-shipping">
+    <span class="icon">🚚</span>
+    <span>発送管理</span>
+  </button>
+  
+</div>
+
+
+        
+
+<!-- 既読メンバーポップアップ -->
+<div id="read-members-popup" class="overlay hidden">
+  <div class="modal small-modal">
+    <h3>既読メンバー一覧</h3>
+    <ul id="read-members-list"></ul>
+    <button id="close-read-members-btn" class="btn-close">閉じる</button>
+  </div>
+</div>
+
+
+
+</body>
+</html>
